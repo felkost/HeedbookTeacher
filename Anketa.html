@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Оценка диалога</title>
+    <meta charset="utf-8">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.17.0/dist/jquery.validate.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .container {
+            max-width: 960px;
+        }
+
+        .border-top {
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .border-bottom {
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .border-top-gray {
+            border-top-color: #adb5bd;
+        }
+
+        .box-shadow {
+            box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+        }
+
+        .lh-condensed {
+            line-height: 1.25;
+        }
+
+        input:invalid {
+            border: 2px dashed red;
+        }
+
+        input:required:valid {
+            border: 2px solid black;
+        }
+    </style>
+
+</head>
+<body class="bg-light">
+    <div class="navbar navbar-inverse">
+        <div class="navbar-inner">
+            <div class="container ">
+                <ul class="nav nav-pills">
+                    <li class="active pull-left"><a href="#">Оценка диалога</a></li>
+                    <li><a href="https://heedbookteacher.azurewebsites.net/api/MurkUp">Разметка диалога</a></li>
+                    <li class="pull-right"><a href="#" data-toggle="modal" data-target="#logoutModal">Выход</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="row">
+            <div class="col">
+                <br />
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-offset-1" style="width:640px; position:absolute; ">
+            <video class="d-block mb-2" width="640" height="480" controls loop id="videoID">
+                <!--<source src="" type="video/mp4">-->
+                <source src="" type='video/webm; codecs="vp8, vorbis"' Ваш браузер не поддерживает видео-тег. />
+            </video>
+        </div>
+        <form name="registration">
+            <div class="col-sm-4" style="position:absolute; margin-left:800px;" >
+                <div class="row">
+                    <div class="col ">
+                        <label for="quest1">С каким настроением обратился к нам клиент?</label>
+                    </div>
+                    <div class="col-md-6 ">
+                        <input type="text" class="form-control" id="quest1" placeholder="от 0 до 100" name="quest1" required>
+                        <br /><br /><br />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col ">
+                        <label for="quest2">С каким настроением ушел клиент?</label>
+                    </div>
+                    <div class="col-md-6 ">
+                        <input type="text" class="form-control" id="quest2" placeholder="от 0 до 100" name="quest2" required>
+                        <br /><br /><br />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col ">
+                        <label for="quest3">Насколько обслуживание клиента сотрудником соответствует его ожиданиям?</label>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="quest3" placeholder="от 0 до 100" name="quest3"  required>
+                        <br /><br /><br /><br /><br />
+                    </div>
+                </div>
+                <div class="row ">
+                    <div class="col-md-6 ">
+                        <input type="button" 
+                               value="Отправить" onclick="PostEstimate()" class="btn btn-lg btn-primary btn-block" id="subButton" />
+                        <br />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1"></p>
+    </footer>
+
+    <!-- Small modal -->
+    <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4>Завершить работу<i class="fa fa-lock"></i></h4>
+                </div>
+                <div class="modal-body">
+                    <p><i class="fa fa-question-circle"></i> Вы хотите завершить работу? <br /></p>
+                    <div class="actionsBtns">
+                        <form action="/logout" method="post">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                            <input type="submit" class="btn btn-default btn-primary" data-dismiss="modal" value="Да" onclick="RedirectAfterLogOut()" />
+                            <button class="btn btn-default" data-dismiss="modal">Нет</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //POST first video
+        "use strict";
+        var DialogueId;
+        var SAS;
+
+        $(document).ready(function () {
+            var settings = {
+                url: 'https://hb-api-cons-csharp.azurewebsites.net/api/Teacher_Http_GetVideo',
+                type: "POST"
+            }
+
+            $.ajax(settings)
+                .done(function (responseTxt, statusTxt, xhr) {
+                    DialogueId = responseTxt.DialogueId;
+
+                    SAS = responseTxt.SAS;
+                    console.log(SAS);
+
+                    var video = document.getElementById('videoID');
+
+                    video.src = SAS;
+                    video.load();
+
+                    validateForm();
+                })
+                .fail(function (jqXHR, textStatus) {
+                    alert("Не удалось загрузить с сервера видео.");
+                });
+        });
+
+        //---------------------------------------------------------------------------------------------------------
+        function validateForm() {
+            $("form[name='registration']").validate({
+                rules: {
+                    quest1: {
+                        required: true,
+                        digits: true,
+                        range: [0, 100]
+                    },
+                    quest2: {
+                        required: true,
+                        digits: true,
+                        range: [0, 100]
+                    },
+                    quest3: {
+                        required: true,
+                        digits: true,
+                        range: [0, 100]
+                    }
+                },
+                messages: {
+                    quest1: {
+                        required: "Пожалуйста, введите число от 0 до 100.",
+                        digits: "Значение должно быть числом.",
+                        range: "Число должно принадлежать диапазону от 0 до 100."
+                    },
+                    quest2: {
+                        required: "Пожалуйста, введите число от 0 до 100.",
+                        digits: "Значение должно быть числом.",
+                        range: "Число должно принадлежать диапазону от 0 до 100."
+                    },
+                    quest3: {
+                        required: "Пожалуйста, введите число от 0 до 100.",
+                        digits: "Значение должно быть числом.",
+                        range: "Число должно принадлежать диапазону от 0 до 100."
+                    }
+                },
+                onsubmit: PostEstimate
+            });
+        }
+
+        //------------------------------------------------------------------------------------------------
+        function PostEstimate() {
+            var quest1 = parseInt((document.getElementById('quest1')).value);
+            var quest2 = parseInt((document.getElementById('quest2')).value);
+            var quest3 = parseInt((document.getElementById('quest3')).value);
+            var q1 = 0.0 <= quest1 && quest1 <= 100.0;
+            var q2 = 0.0 <= quest2 && quest2 <= 100.0;
+            var q3 = 0.0 <= quest3 && quest3 <= 100.0;
+            if (q1 && q2 && q3) {
+                var send_data = {
+                    dialogueId: DialogueId,
+                    begMoodByTeacher: parseInt((document.getElementById('quest1')).value),
+                    endMoodByTeacher: parseInt((document.getElementById('quest2')).value),
+                    meetingExpectationsByTeacher: parseInt((document.getElementById('quest3')).value)
+                };
+                var settings = {
+                    url: 'https://hb-api-cons-csharp.azurewebsites.net/api/Teacher_Http_SatisfactionFilling',
+                    type: "POST",
+                    data: JSON.stringify(send_data),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                $.ajax(settings)
+                    .done(function (responseTxt, statusTxt, xhr) {
+                        window.location.href = 'https://heedbookteacher.azurewebsites.net/api/Anketa';
+                    })
+                    .fail(function (jqXHR, textStatus) {
+                        alert("Не удалось отправить данные на сервер.");
+                    });
+
+            }
+            else
+                alert("Проверьте правильность введенных данных.");
+        }
+
+
+        function RedirectAfterLogOut() {
+            window.location.href = 'https://heedbookteacher.azurewebsites.net/api/Teacher';
+        }
+    </script>    
+
+</body>
+</html>

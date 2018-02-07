@@ -1,0 +1,107 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Авторизация Учителя</title>
+    <meta charset="utf-8">
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: -ms-flexbox;
+            display: -webkit-box;
+            display: flex;
+            -ms-flex-align: center;
+            -ms-flex-pack: center;
+            -webkit-box-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #f5f5f5;
+        }
+
+        .form-signin {
+            width: 100%;
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+        }
+
+            .form-signin .checkbox {
+                font-weight: 400;
+            }
+
+            .form-signin .form-control {
+                position: relative;
+                box-sizing: border-box;
+                height: auto;
+                padding: 10px;
+                font-size: 16px;
+            }
+
+                .form-signin .form-control:focus {
+                    z-index: 2;
+                }
+
+            .form-signin input[type="email"] {
+                margin-bottom: -1px;
+                border-bottom-right-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            .form-signin input[type="password"] {
+                margin-bottom: 10px;
+                border-top-left-radius: 0;
+                border-top-right-radius: 0;
+            }
+
+    </style>
+</head>
+<body class="text-center">
+
+    <form class="form-signin" id="loginForm">
+        <h1 class="h3 mb-3 font-weight-normal">Пожалуйста, введите</h1>
+        <label for="inputLogin" class="sr-only">Логин</label>
+        <input type="email" id="inputLogin" class="form-control" placeholder="Логин" required autofocus>
+        <label for="inputPassword" class="sr-only">Пароль</label>
+        <input type="password" id="inputPassword" class="form-control" placeholder="Пароль" required>
+        
+        <input type="button" value="Войти" class="btn btn-lg btn-primary btn-block" id="button1" onclick="auth()">
+    </form>
+
+    <script>
+        function auth() {
+            var settings = {
+                url: "https://heedbook.com/account/GenerateToken",
+                type: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'username': (document.getElementById('inputLogin')).value,
+                    'pswd': (document.getElementById('inputPassword')).value
+                }
+            }
+
+
+            $.ajax(settings)
+                .done(function (responseTxt, statusTxt, xhr) {
+                    document.cookie = "applicationuserid=" + responseTxt.applicationuserid;
+                    window.location.href = 'https://heedbookteacher.azurewebsites.net/api/Select';
+                })
+                .fail(function (jqXHR, textStatus) {
+                    alert("Проверьте правильность логина и пароля. ");
+                });
+
+        }
+    </script>
+
+</body>
+</html>

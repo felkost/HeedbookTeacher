@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Выбрать режим работы Учителя</title>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <style>
+        body {
+            font-size: 100%;
+        }
+
+        button {
+            margin: 0 auto;
+            display: block;
+        }
+
+        h3 p {
+            text-align: center;
+        }
+
+        div {
+            background: white;
+            width: 440px;
+            margin: 20px;
+        }
+
+        .flex-center {
+            margin: 40px auto;
+            color: black;
+            border: 10px solid white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 200px;
+            /*resize: vertical;*/
+            overflow: auto;
+        }
+
+            .flex-center h3 p {
+                margin: 0;
+                padding: 20px;
+            }
+    </style>
+</head>
+<body>
+    <div class="flex-center">
+        <h3></h3>
+    </div>
+    <div class="flex-center">
+        <p>
+            <h3>Выберите режим работы:</h3>
+        </p>
+        <p>
+            <a href="https://heedbookteacher.azurewebsites.net/api/Anketa" class="btn btn-large btn-primary">Оценить диалог</a>
+            <a href="https://heedbookteacher.azurewebsites.net/api/MurkUp" class="btn btn-large btn-primary">Разметить диалог</a>
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Разметка диалога</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .container {
+            max-width: 1260px;
+        }
+
+        .border-top {
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .border-bottom {
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .border-top-gray {
+            border-top-color: #adb5bd;
+        }
+
+        .box-shadow {
+            box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+        }
+
+        .lh-condensed {
+            line-height: 1.25;
+        }
+
+
+        .thumbnail img {
+            /* styles for the image*/
+            width: 210px;
+            height: 170px;
+            display: block;
+        }
+
+
+    </style>
+   
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <!--NavBar-->
+        <div class="row">
+            <div class="navbar navbar-inverse">
+                <div class="navbar-inner">
+                    <div class="container ">
+                        <ul class="nav nav-pills">
+                            <li class="pull-left"><a href="https://heedbookteacher.azurewebsites.net/api/Anketa">Оценка диалога</a></li>
+                            <li class="active"><a href="#">Разметка диалога</a></li>
+                            <li class="pull-right"><a href="#" data-toggle="modal" data-target="#logoutModal">Выход</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div><!--end NavBar-->
+        </div><!--end NavBar-->
+
+        <div id="wrapper"></div> <!--gallery-->
+
+        <footer class="my-5 pt-5 text-muted text-center text-small">
+            <div class="checkbox">
+                <label class="labCheckBox" id="labCheck"> <input type="checkbox" value="" id="agree"> Подтвердить отправку</label>
+            </div>
+            <div class="row justify-content-center">
+                <hr class="mb-2">
+                <div class="col-md-4 col-md-offset-4">
+                    <input type="button" value="Отправить" onclick="postMarkup()" class="btn btn-lg btn-primary btn-block" id="subButton" />
+                </div>
+            </div>
+        </footer>
+        <hr class="mb-2">
+    </div>
+
+    <!-- Small modal -->
+    <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4>Завершить работу<i class="fa fa-lock"></i></h4>
+                </div>
+                <div class="modal-body">
+                    <p><i class="fa fa-question-circle"></i> Вы хотите завершить работу? <br /></p>
+                    <div class="actionsBtns">
+                        <form action="/logout" method="post">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                            <input type="submit" class="btn btn-default btn-primary" data-dismiss="modal" value="Да" onclick="RedirectAfterLogOut()" />
+                            <button class="btn btn-default" data-dismiss="modal">Нет</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        'use strict'
+
+        //get data from server
+        var FileNames = [];
+        var Markup = [];
+        var SAS = [];
+        var n = 0;
+
+        var SAS = [];
+        //build all rows that it is consist of 6 div-block or less 6 in the row
+        var currNdxImage = 0;  //current index img for build div-block
+
+        $(document).ready(function () {
+            var settings = {
+                url: 'https://hb-api-cons-csharp.azurewebsites.net/api/Teacher_Http_GetFrames',
+                async: true,
+                type: "POST"
+            }
+
+            $.ajax(settings)
+                .done(function (responseTxt, statusTxt, xhr) {
+
+                    var sFileNames = responseTxt.FileNames;
+                    var sMarkup = responseTxt.Markup;
+                    var sSAS = responseTxt.SAS;
+                    SAS = sSAS.substring(1, sSAS.length - 1).split(', ');
+
+                    n = SAS.length;
+                    while (n == 0) window.location.href = 'https://heedbookteacher.azurewebsites.net/api/MurkUp';
+
+                    while (currNdxImage < Math.min(24, SAS.length)) {
+                        $(wrapper).append(addRow());
+                    }
+                    if (currNdxImage >= Math.min(24, SAS.length))
+                        scrollRows(currNdxImage);
+                })
+                .fail(function (jqXHR, textStatus) {
+                    alert("Не удалось загрузить с сервера видео.");
+                });
+        });
+
+
+        //--------------------------------------------sub-tasks------------------------------------------
+        function addBlock(img) {
+            var s = '<div class="col-lg-2 flex-lg-middle">' +
+                '<div class="thumbnail" >' +
+                '<img src="' + img + '" alt="">' +
+                '<div class="checkbox  col-md-offset-1">' +
+                '<label><input type="checkbox" value="">Начало / конец </label>' +
+                '</div>' + '</div>' + '</div>';
+            return s;
+        }
+
+
+        function addRow() {
+            var cnt_imgs = currNdxImage + 6 < n ? 6 : n - currNdxImage; //count images of row: full row or part of the row
+
+            var s = '';
+            for (var i = 0; i < cnt_imgs && i < SAS.length; i++) {
+                var s = s + addBlock(SAS[currNdxImage]);
+                currNdxImage++;
+            }
+
+            var row = '<div class="row">' + s + '</div>';
+            return row;
+        }
+
+        //-----------------------------------------------------------------------------------------------
+        function scrollRows(currNdxImage) {
+            $(window).scroll(function () {
+                var windowScroll = $(window).scrollTop();
+                var windowHeight = $(window).height();
+                var documentHeight = $(document).height();
+
+                if ((windowScroll + windowHeight) == documentHeight) {
+                    var randName = getRandomInt(1, 500);
+                    if (currNdxImage < n)
+                        $(wrapper).append(addRow(currNdxImage));
+                }
+
+                function getRandomInt(min, max) {
+                    return Math.floor(Math.floor(Math.random() * (max - min + 1)) + min);
+                }
+            });
+        }
+        //-----------------------------------------------------------------------------------------------
+        function postMarkup() {
+            if (document.getElementById('agree').checked) {
+                var send_data = {
+                    ApplicationUser: getCookie("applicationuserid"),
+                    Markup: []
+                };
+
+                for (var i = 0; i < SAS.length; ++i)
+                    SAS[i] = SAS[i].substring(SAS[i].lastIndexOf('/') + 1, SAS[i].length)
+
+                for (var i = 0; i < SAS.length; ++i)
+                    SAS = SAS.substring(0, SAS.indexOf("?"));
+                
+                var j = 0, cnt_img_choose = 0;
+                $('input[type=checkbox]').each(function () {
+                    var iThisVal = (this.checked ? 1 : 0);
+                    if (j != n) {
+                        if (iThisVal) {
+                            send_data.Markup.push({ "FileName": SAS[j] });
+                            cnt_img_choose++;
+                        }
+                    }
+                    j++;
+                });
+
+                if (cnt_img_choose % 2 == 1)
+                    alert("Количество выбранных изображений - непарное.\nПроверьте правильность разметки.");
+                else {
+
+                    var settings = {
+                        url: 'https://hb-api-cons-csharp.azurewebsites.net/api/Teacher_Http_SatisfactionFilling',
+                        type: "POST",
+                        data: JSON.stringify(send_data),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    };
+
+                    $.ajax(settings).done(function (response) {
+                        window.location.href = 'https://heedbookteacher.azurewebsites.net/api/MurkUp';
+                    })
+                        .fail(function (jqXHR, textStatus) {
+                            //alert(textStatus);
+                        });
+                }
+            } else {
+                alert('Подтвердите отправку данных, пожалуйста.');
+                var element = document.getElementById('labCheck');
+                $(".labCheckBox").css({
+                    "border": "2px  dotted #00f", "display": "block", "background": "#F08080"
+                });
+            }
+
+        }
+
+        function RedirectAfterLogOut() {
+            window.location.href = 'https://heedbookteacher.azurewebsites.net/api/Teacher';
+        }
+
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+    </script>
+
+</body>
+</html>
